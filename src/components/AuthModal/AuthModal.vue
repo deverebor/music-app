@@ -2,11 +2,25 @@
 import { useModalStore } from "@/stores/modal";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
+import type { IRegisterValues } from "./interfaces";
 
 const tab = ref("login");
+const validationSchema = ref({
+  name: "required|min:3|max:60|alphaSpaces",
+  email: "required|min:3|max:60|email",
+  age: "required|between:18,100",
+  password: "required|min:8",
+  confirmPassword: "required|confirmed:@password",
+  country: "required",
+  tos: "required",
+});
 
 const store = useModalStore();
 const { isOpen } = storeToRefs(store);
+
+function register(registerValues: IRegisterValues) {
+  console.log(registerValues);
+}
 </script>
 <template>
   <div
@@ -106,69 +120,90 @@ const { isOpen } = storeToRefs(store);
             </button>
           </form>
           <!-- Registration Form -->
-          <form v-else>
+          <VeeForm
+            v-else
+            @submit="register"
+            :validation-schema="validationSchema"
+          >
             <!-- Name -->
             <div class="mb-3">
               <label class="inline-block mb-2">Name</label>
-              <input
+              <VeeField
+                name="name"
                 type="text"
                 class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
                 placeholder="Enter Name"
               />
+              <VeeErroMessage name="name" class="text-red-600" />
             </div>
             <!-- Email -->
             <div class="mb-3">
               <label class="inline-block mb-2">Email</label>
-              <input
+              <VeeField
                 type="email"
+                name="email"
                 class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
                 placeholder="Enter Email"
               />
+              <VeeErroMessage name="email" class="text-red-600" />
             </div>
             <!-- Age -->
             <div class="mb-3">
               <label class="inline-block mb-2">Age</label>
-              <input
+              <VeeField
+                name="age"
                 type="number"
                 class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
               />
+              <VeeErroMessage name="age" class="text-red-600" />
             </div>
             <!-- Password -->
             <div class="mb-3">
               <label class="inline-block mb-2">Password</label>
-              <input
+              <VeeField
+                name="password"
                 type="password"
                 class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
                 placeholder="Password"
               />
+              <VeeErroMessage name="password" class="text-red-600" />
             </div>
             <!-- Confirm Password -->
             <div class="mb-3">
               <label class="inline-block mb-2">Confirm Password</label>
-              <input
+              <VeeField
+                name="confirmPassword"
                 type="password"
                 class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
                 placeholder="Confirm Password"
               />
+              <VeeErroMessage name="confirmPassword" class="text-red-600" />
             </div>
             <!-- Country -->
             <div class="mb-3">
               <label class="inline-block mb-2">Country</label>
-              <select
+              <VeeField
+                as="select"
+                name="country"
                 class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
               >
+                <option value="Brasil">Brasil</option>
                 <option value="USA">USA</option>
                 <option value="Mexico">Mexico</option>
                 <option value="Germany">Germany</option>
-              </select>
+              </VeeField>
+              <VeeErroMessage name="country" class="text-red-600" />
             </div>
             <!-- TOS -->
             <div class="mb-3 pl-6">
-              <input
+              <label class="inline-block">Accept terms of service</label>
+              <VeeField
+                name="tos"
+                value="1"
                 type="checkbox"
                 class="w-4 h-4 float-left -ml-6 mt-1 rounded"
               />
-              <label class="inline-block">Accept terms of service</label>
+              <VeeErroMessage name="tos" class="text-red-600 block" />
             </div>
             <button
               type="submit"
@@ -176,7 +211,7 @@ const { isOpen } = storeToRefs(store);
             >
               Submit
             </button>
-          </form>
+          </VeeForm>
         </div>
       </div>
     </div>
