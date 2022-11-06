@@ -7,3 +7,7 @@ export interface IRegisterValues {
   password: string;
   tos: string;
 }
+
+export interface IInitialFormValues {
+  country: string;
+}

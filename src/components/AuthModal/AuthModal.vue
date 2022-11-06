@@ -2,23 +2,40 @@
 import { useModalStore } from "@/stores/modal";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
-import type { IRegisterValues } from "./interfaces";
+import type { IInitialFormValues, IRegisterValues } from "./interfaces";
 
 const tab = ref("login");
 const validationSchema = ref({
   name: "required|min:3|max:60|alphaSpaces",
   email: "required|min:3|max:60|email",
   age: "required|between:18,100",
-  password: "required|min:8",
-  confirmPassword: "required|confirmed:@password",
+  password: "required|min:8|notOneOf:password",
+  confirmPassword: "required|passwordsMismatch:@password",
   country: "required",
-  tos: "required",
+  tos: "tos",
 });
+const initialFormValues = ref({
+  country: "Brazil",
+} as IInitialFormValues);
+const registrationOnSubmit = ref(false);
+const registrationShowAlert = ref(false);
+const registrationAlertVariant = ref("bg-blue-500");
+const registrationAlertMessage = ref(
+  "Please await your account is being created."
+);
 
 const store = useModalStore();
 const { isOpen } = storeToRefs(store);
 
 function register(registerValues: IRegisterValues) {
+  registrationShowAlert.value = true;
+  registrationOnSubmit.value = true;
+  registrationAlertVariant.value = "bg-blue-500";
+  registrationAlertMessage.value =
+    "Please await your account is being created.";
+
+  registrationAlertVariant.value = "bg-green-500";
+  registrationAlertMessage.value = "Your account has been created.";
   console.log(registerValues);
 }
 </script>
@@ -120,10 +137,18 @@ function register(registerValues: IRegisterValues) {
             </button>
           </form>
           <!-- Registration Form -->
+          <p
+            v-if="registrationShowAlert"
+            class="text-white text-center font-bold p-4 rounded mb-4"
+            :class="registrationAlertVariant"
+          >
+            {{ registrationAlertMessage }}
+          </p>
           <VeeForm
-            v-else
+            v-if="tab === 'register'"
             @submit="register"
             :validation-schema="validationSchema"
+            :initial-values="initialFormValues"
           >
             <!-- Name -->
             <div class="mb-3">
@@ -161,11 +186,20 @@ function register(registerValues: IRegisterValues) {
             <div class="mb-3">
               <label class="inline-block mb-2">Password</label>
               <VeeField
+                :bails="false"
                 name="password"
-                type="password"
-                class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
-                placeholder="Password"
-              />
+                #default="{ field, errors }"
+              >
+                <input
+                  v-bind="field"
+                  class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
+                  type="password"
+                  placeholder="Password"
+                />
+                <p :key="error" v-for="error in errors" class="text-red-600">
+                  {{ error }}
+                </p>
+              </VeeField>
               <VeeErroMessage name="password" class="text-red-600" />
             </div>
             <!-- Confirm Password -->
@@ -187,7 +221,7 @@ function register(registerValues: IRegisterValues) {
                 name="country"
                 class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
               >
-                <option value="Brasil">Brasil</option>
+                <option value="Brazil">Brazil</option>
                 <option value="USA">USA</option>
                 <option value="Mexico">Mexico</option>
                 <option value="Germany">Germany</option>
@@ -208,6 +242,7 @@ function register(registerValues: IRegisterValues) {
             <button
               type="submit"
               class="block w-full bg-purple-600 text-white py-1.5 px-3 rounded transition hover:bg-purple-700"
+              :disabled="registrationOnSubmit"
             >
               Submit
             </button>
