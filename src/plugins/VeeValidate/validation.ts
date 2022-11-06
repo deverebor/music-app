@@ -13,7 +13,7 @@ import {
 import {
   configure,
   defineRule,
-  ErrorMessage as VeeErroMessage,
+  ErrorMessage as VeeErrorMessage,
   Field as VeeField,
   Form as VeeForm,
 } from "vee-validate";
@@ -24,7 +24,7 @@ export default {
   install(app: App) {
     app.component("VeeForm", VeeForm);
     app.component("VeeField", VeeField);
-    app.component("VeeErroMessage", VeeErroMessage);
+    app.component("VeeErrorMessage", VeeErrorMessage);
 
     defineRule("alphaSpaces", alphaSpaces);
     defineRule("between", between);
