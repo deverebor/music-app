@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { useModalStore } from "@/stores/modal";
+import { useModalStore } from "@/stores/modal/modal";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
 import { LoginForm, RegisterForm } from "./components";
 
 const tab = ref("login");
 
-const store = useModalStore();
-const { isOpen } = storeToRefs(store);
+const userStore = useModalStore();
+const { isOpen } = storeToRefs(userStore);
 </script>
 <template>
   <div
     class="fixed z-10 inset-0 overflow-y-auto"
-    :class="store.getHiddenClass"
+    :class="userStore.getHiddenClass"
     id="modal"
   >
     <div

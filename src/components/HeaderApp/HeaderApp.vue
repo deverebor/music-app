@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { useModalStore } from "@/stores/modal";
+import { useModalStore } from "@/stores/modal/modal";
+import { useUserStore } from "@/stores/user/user";
 
-const { isOpen } = storeToRefs(useModalStore());
+const userStore = useUserStore();
+const { isUserLoggedIn } = storeToRefs(userStore);
+
+const modalStore = useModalStore();
+const { isOpen } = storeToRefs(modalStore);
 
 function toggleAuthenticationModal() {
   isOpen.value = !isOpen.value;
@@ -16,7 +21,7 @@ function toggleAuthenticationModal() {
 
       <div class="flex flex-grow items-cente">
         <ul class="flex flex-row mt-1">
-          <li>
+          <li v-if="!isUserLoggedIn">
             <a
               @click.prevent="toggleAuthenticationModal"
               class="px-2 text-white"
@@ -25,9 +30,19 @@ function toggleAuthenticationModal() {
               Login / Register
             </a>
           </li>
-          <li>
-            <a class="px-2 text-white" href="#">Manage</a>
-          </li>
+          <template v-else>
+            <li>
+              <a class="px-2 text-white" href="#">Manage</a>
+            </li>
+            <li>
+              <button
+                @click.prevent="userStore.logoutCurrentUser"
+                class="px-2 text-white"
+              >
+                Logout
+              </button>
+            </li>
+          </template>
         </ul>
       </div>
     </nav>
