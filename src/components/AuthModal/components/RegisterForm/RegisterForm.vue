@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { IInitialFormValues, IRegisterValues } from "../../interfaces";
+import { useUserStore } from "@/stores/user/user";
+
+const userStore = useUserStore();
 
 const validationRegistrationSchema = ref({
   name: "required|min:3|max:60|alphaSpaces",
@@ -20,18 +23,26 @@ const registrationShowAlert = ref(false);
 const registrationAlertVariant = ref("");
 const registrationAlertMessage = ref("");
 
-function registerFormSubmit(registerValues: IRegisterValues) {
+async function registerFormSubmit(registerValues: IRegisterValues) {
   registrationShowAlert.value = true;
   registrationOnSubmit.value = true;
   registrationAlertVariant.value = "bg-blue-500";
   registrationAlertMessage.value =
     "Please await your account is being created.";
 
-  setTimeout(() => {
-    registrationAlertVariant.value = "bg-green-500";
-    registrationAlertMessage.value = "Your account has been created.";
-  }, 2000);
-  console.log(registerValues);
+  try {
+    await userStore.registerNewUser(registerValues);
+  } catch (error: any) {
+    registrationOnSubmit.value = false;
+    registrationAlertVariant.value = "bg-red-500";
+    registrationAlertMessage.value =
+      "An unexpected error has occurred. Try again.";
+    return;
+  }
+
+  registrationAlertVariant.value = "bg-green-500";
+  registrationAlertMessage.value = "Your account has been created.";
+  window.location.reload();
 }
 </script>
 <template>
@@ -136,6 +147,7 @@ function registerFormSubmit(registerValues: IRegisterValues) {
     <button
       type="submit"
       class="block w-full bg-purple-600 text-white py-1.5 px-3 rounded transition hover:bg-purple-700"
+      :class="{ 'opacity-50 cursor-not-allowed': registrationOnSubmit }"
       :disabled="registrationOnSubmit"
     >
       Submit

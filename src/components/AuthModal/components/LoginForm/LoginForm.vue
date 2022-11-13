@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { ILoginValues } from "../../interfaces";
+import { useUserStore } from "@/stores/user/user";
+
+const userStore = useUserStore();
 
 const validationLoginSchema = ref({
   email: "required|min:3|max:60|email",
@@ -12,17 +15,25 @@ const loginShowAlert = ref(false);
 const loginAlertVariant = ref("");
 const loginAlertMessage = ref("");
 
-function loginFormSubmit(loginValues: ILoginValues) {
+async function loginFormSubmit(loginValues: ILoginValues) {
   loginShowAlert.value = true;
   loginOnSubmit.value = true;
   loginAlertVariant.value = "bg-blue-500";
   loginAlertMessage.value = "Please await your account is being logged in.";
 
-  setTimeout(() => {
-    loginAlertVariant.value = "bg-green-500";
-    loginAlertMessage.value = "Your account has been logged in.";
-  }, 2000);
-  console.log(loginValues);
+  try {
+    await userStore.loginCurrentUser(loginValues);
+  } catch (error: any) {
+    loginOnSubmit.value = false;
+    loginAlertVariant.value = "bg-red-500";
+    loginAlertMessage.value = "An unexpected error has occurred. Try again.";
+    return;
+  }
+
+  loginAlertVariant.value = "bg-green-500";
+  loginAlertMessage.value = "Your account has been logged in.";
+
+  window.location.reload();
 }
 </script>
 <template>
@@ -61,6 +72,7 @@ function loginFormSubmit(loginValues: ILoginValues) {
       type="submit"
       class="block w-full bg-purple-600 text-white py-1.5 px-3 rounded transition hover:bg-purple-700"
       :disabled="loginOnSubmit"
+      :class="{ 'opacity-50 cursor-not-allowed': loginOnSubmit }"
     >
       Submit
     </button>
