@@ -1,23 +1,49 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+
+import HomeView from "@/views/Home/HomeView.vue";
+import AboutView from "@/views/About/AboutView.vue";
+import ManageView from "@/views/Manage/ManageView.vue";
+
+import { useUserStore } from "@/stores/user/user";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
-      name: "home",
+      name: "Home",
       component: HomeView,
     },
     {
       path: "/about",
-      name: "about",
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import("../views/AboutView.vue"),
+      name: "About",
+      component: AboutView,
+    },
+    {
+      path: "/manage",
+      name: "Manage",
+      component: ManageView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      // @todo: create a 404 view
+      path: "/:catchAll(.*)*",
+      redirect: { name: "Home" },
     },
   ],
+  linkExactActiveClass: "text-orange-400",
+});
+
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore();
+
+  if (!to.meta.requiresAuth || userStore.isUserLoggedIn) {
+    next();
+  } else {
+    next({ name: "Home" });
+  }
 });
 
 export default router;
