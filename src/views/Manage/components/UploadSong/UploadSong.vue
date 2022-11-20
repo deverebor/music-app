@@ -6,6 +6,9 @@ interface ISongUpload {
   firebaseStorageTask: any;
   currentProgress: number;
   songName: string;
+  variantSong: string;
+  iconSong: string;
+  textClass: string;
 }
 
 const isDragOver = ref(false);
@@ -32,13 +35,30 @@ function uploadNewSong($event: any) {
         firebaseStorageTask,
         currentProgress: 0,
         songName: file.name,
+        variantSong: "bg-blue-400",
+        iconSong: "fa fa-spinner fa-spin",
+        textClass: "",
       }) - 1;
 
-    firebaseStorageTask.on("state_change", (snapshot) => {
-      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    firebaseStorageTask.on(
+      "state_change",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
 
-      songsUploads.value[uploadedFile].currentProgress = progress;
-    });
+        songsUploads.value[uploadedFile].currentProgress = progress;
+      },
+      (error) => {
+        songsUploads.value[uploadedFile].variantSong = "bg-red-400";
+        songsUploads.value[uploadedFile].iconSong = "fas fa-times";
+        songsUploads.value[uploadedFile].textClass = "text-red-400";
+      },
+      () => {
+        songsUploads.value[uploadedFile].variantSong = "bg-green-400";
+        songsUploads.value[uploadedFile].iconSong = "fas fa-check";
+        songsUploads.value[uploadedFile].textClass = "text-green-400";
+      }
+    );
   });
 }
 </script>
@@ -70,12 +90,14 @@ function uploadNewSong($event: any) {
       <!-- Progess Bars -->
       <div :key="song.songName" v-for="song in songsUploads" class="mb-4">
         <!-- File Name -->
-        <div class="font-bold text-sm">{{ song.songName }}</div>
+        <div class="font-bold text-sm" :class="song.textClass">
+          <i :class="song.iconSong"></i>{{ song.songName }}
+        </div>
         <div class="flex h-4 overflow-hidden bg-gray-200 rounded">
           <!-- Inner Progress Bar -->
           <div
             :style="{ width: `${song.currentProgress}%` }"
-            :class="'bg-blue-400'"
+            :class="song.variantSong"
             class="transition-all progress-bar bg-blue-400"
           ></div>
         </div>
