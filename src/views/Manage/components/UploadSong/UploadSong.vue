@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { firebaseStorage } from "@/includes/Firebase/firebase";
+import { onBeforeUnmount, ref } from "vue";
+import {
+  firebaseStorage,
+  firebaseAuth,
+  songsCollection,
+} from "@/includes/Firebase/firebase";
 
 interface ISongUpload {
   firebaseStorageTask: any;
@@ -17,7 +21,9 @@ const songsUploads = ref([] as ISongUpload[]);
 function uploadNewSong($event: any) {
   isDragOver.value = false;
 
-  const files: File[] = [...$event.dataTransfer.files];
+  const files: File[] = $event.dataTransfer
+    ? [...$event.dataTransfer.files]
+    : [...$event.target.files];
 
   files.forEach((file) => {
     if (file.type !== "audio/mpeg") {
@@ -53,7 +59,22 @@ function uploadNewSong($event: any) {
         songsUploads.value[uploadedFile].iconSong = "fas fa-times";
         songsUploads.value[uploadedFile].textClass = "text-red-400";
       },
-      () => {
+      async () => {
+        const uploadedSongFromUser = {
+          uid: firebaseAuth.currentUser?.uid,
+          displayUserName: firebaseAuth.currentUser?.displayName,
+          originalName: firebaseStorageTask.snapshot.ref.name,
+          modifiedName: firebaseStorageTask.snapshot.ref.name,
+          songGenre: "",
+          songUrl: "",
+          commentCount: 0,
+        };
+
+        uploadedSongFromUser.songUrl =
+          await firebaseStorageTask.snapshot.ref.getDownloadURL();
+
+        await songsCollection.add(uploadedSongFromUser);
+
         songsUploads.value[uploadedFile].variantSong = "bg-green-400";
         songsUploads.value[uploadedFile].iconSong = "fas fa-check";
         songsUploads.value[uploadedFile].textClass = "text-green-400";
@@ -61,6 +82,12 @@ function uploadNewSong($event: any) {
     );
   });
 }
+
+onBeforeUnmount(() => {
+  songsUploads.value.forEach((songUpload) => {
+    songUpload.firebaseStorageTask.cancel();
+  });
+});
 </script>
 <template>
   <div class="bg-white rounded border border-gray-200 relative flex flex-col">
@@ -86,6 +113,12 @@ function uploadNewSong($event: any) {
       >
         <h5>Drop your files here</h5>
       </div>
+      <input
+        @change="uploadNewSong($event)"
+        multiple
+        type="file"
+        class="w-full"
+      />
       <hr class="my-6" />
       <!-- Progess Bars -->
       <div :key="song.songName" v-for="song in songsUploads" class="mb-4">
