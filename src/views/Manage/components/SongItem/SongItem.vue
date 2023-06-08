@@ -34,6 +34,10 @@ const props = defineProps({
     type: Function as PropType<(objectId: number) => void>,
     required: true,
   },
+  updateUnsavedSongChanges: {
+    type: Function as PropType<(value: boolean) => void>,
+    required: true,
+  },
 });
 
 async function editSongInformation(inputValues: InputUpdateSongValues) {
@@ -56,6 +60,7 @@ async function editSongInformation(inputValues: InputUpdateSongValues) {
   }
 
   props.updateSongs(props.songIndex, inputValues);
+  props.updateUnsavedSongChanges(false);
 
   inSubmission.value = false;
   alertConfiguration.value.variant = "bg-green-500";
@@ -114,6 +119,7 @@ async function removeSelectedSong() {
         <div class="mb-3">
           <label class="inline-block mb-2">Song Title</label>
           <VeeField
+            @input="props.updateUnsavedSongChanges(true)"
             type="text"
             class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
             placeholder="Enter Song Title"
@@ -124,6 +130,7 @@ async function removeSelectedSong() {
         <div class="mb-3">
           <label class="inline-block mb-2">Genre</label>
           <VeeField
+            @input="props.updateUnsavedSongChanges(true)"
             type="text"
             class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
             placeholder="Enter Genre"

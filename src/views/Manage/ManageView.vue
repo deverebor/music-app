@@ -3,8 +3,10 @@ import { onMounted, ref } from "vue";
 import { UploadSong, SongItem } from "./components";
 import { songsCollection, firebaseAuth } from "@/includes/Firebase/firebase";
 import type { ISongsDocument, InputUpdateSongValues } from "./types";
+import { onBeforeRouteLeave } from "vue-router";
 
 const songs = ref<ISongsDocument[]>([]);
+const isUnsavedSongChanges = ref(false);
 
 onMounted(async () => {
   const snapshots = await songsCollection
@@ -31,6 +33,21 @@ function handleNewSongAdded(songReference: any) {
 
   songs.value.push(song);
 }
+
+function updateUnsavedSongChanges(value: boolean) {
+  isUnsavedSongChanges.value = value;
+}
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!isUnsavedSongChanges.value) {
+    next();
+  } else {
+    const outPage = confirm(
+      "You have unsaved changes. Are you sure you want to leave this page?"
+    );
+    next(outPage);
+  }
+});
 </script>
 
 <template>
@@ -58,6 +75,7 @@ function handleNewSongAdded(songReference: any) {
               :songIndex="index"
               :updateSongs="updateSongs"
               :removeSong="removeSong"
+              :updateUnsavedSongChanges="updateUnsavedSongChanges"
             />
           </div>
         </div>
