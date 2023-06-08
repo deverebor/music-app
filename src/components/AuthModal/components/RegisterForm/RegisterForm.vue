@@ -101,7 +101,7 @@ async function registerFormSubmit(registerValues: IRegisterValues) {
           type="password"
           placeholder="Password"
         />
-        <p :key="error" v-for="error in errors" class="text-red-600">
+        <p :key="index" v-for="(error, index) in errors" class="text-red-600">
           {{ error }}
         </p>
       </VeeField>

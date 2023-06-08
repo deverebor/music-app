@@ -1,5 +1,28 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
 import { UploadSong } from "./components";
+import { songsCollection, firebaseAuth } from "@/includes/Firebase/firebase";
+
+type ISongsDocument = {
+  documentId: string;
+};
+
+let songs = ref<ISongsDocument[]>([]);
+
+onMounted(async () => {
+  const snapshots = await songsCollection
+    .where("uid", "==", firebaseAuth.currentUser?.uid)
+    .get();
+
+  snapshots.forEach((documentSnapshot) => {
+    const song = {
+      documentId: documentSnapshot.id,
+      ...documentSnapshot.data(),
+    };
+
+    songs.value.push(song);
+  });
+});
 </script>
 
 <template>
