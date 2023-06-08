@@ -1,0 +1,6 @@
+packages:
+  - "src/**"
+  - 'template/**'
+  - 'cypress/**'
+  - '!**/test/**'
+  - '!**/public/**'
