@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, type PropType } from "vue";
-import type { ISongsDocument, InputUpdateSongValues } from "../../types";
+import type { ISongsDocument, InputUpdateSongValues } from "@/helpers/types";
 import { songsCollection, firebaseStorage } from "@/includes/Firebase/firebase";
 
 const toggleEditForm = ref(false);
