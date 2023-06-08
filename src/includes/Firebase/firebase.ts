@@ -1,6 +1,7 @@
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/storage";
 
 const firebaseConfig = {
   apiKey: `${import.meta.env.VITE_FIREBASE_API_KEY}`,
@@ -15,7 +16,15 @@ firebase.initializeApp(firebaseConfig);
 
 const firebaseAuth = firebase.auth();
 const firestoreDatabase = firebase.firestore();
+const firebaseStorage = firebase.storage();
 
 const usersCollection = firestoreDatabase.collection("users");
+const songsCollection = firestoreDatabase.collection("songs");
 
-export { firebaseAuth, firestoreDatabase, usersCollection };
+export {
+  firebaseAuth,
+  firestoreDatabase,
+  firebaseStorage,
+  usersCollection,
+  songsCollection,
+};
