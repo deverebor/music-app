@@ -11,14 +11,7 @@ onMounted(async () => {
     .where("uid", "==", firebaseAuth.currentUser?.uid)
     .get();
 
-  snapshots.forEach((documentSnapshot) => {
-    const song = {
-      documentId: documentSnapshot.id,
-      ...documentSnapshot.data(),
-    };
-
-    songs.value.push(song);
-  });
+  snapshots.forEach(handleNewSongAdded);
 });
 
 async function updateSongs(objectId: number, values: InputUpdateSongValues) {
@@ -29,6 +22,15 @@ async function updateSongs(objectId: number, values: InputUpdateSongValues) {
 function removeSong(objectId: number) {
   songs.value.splice(objectId, 1);
 }
+
+function handleNewSongAdded(songReference: any) {
+  const song = {
+    documentId: songReference.id,
+    ...songReference.data(),
+  };
+
+  songs.value.push(song);
+}
 </script>
 
 <template>
@@ -36,7 +38,7 @@ function removeSong(objectId: number) {
   <section class="container mx-auto mt-6">
     <div class="md:grid md:grid-cols-3 md:gap-4">
       <div class="col-span-1">
-        <UploadSong />
+        <UploadSong :handleNewSongAdded="handleNewSongAdded" ref="upload" />
       </div>
       <div class="col-span-2">
         <div

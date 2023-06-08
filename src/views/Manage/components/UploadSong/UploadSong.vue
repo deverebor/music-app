@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from "vue";
+import { onBeforeUnmount, ref, type PropType } from "vue";
 import {
   firebaseStorage,
   firebaseAuth,
@@ -17,6 +17,13 @@ interface ISongUpload {
 
 const isDragOver = ref(false);
 const songsUploads = ref([] as ISongUpload[]);
+
+const props = defineProps({
+  handleNewSongAdded: {
+    type: Function as PropType<(songReference: any) => void>,
+    required: true,
+  },
+});
 
 function uploadNewSong($event: any) {
   isDragOver.value = false;
@@ -73,7 +80,10 @@ function uploadNewSong($event: any) {
         uploadedSongFromUser.songUrl =
           await firebaseStorageTask.snapshot.ref.getDownloadURL();
 
-        await songsCollection.add(uploadedSongFromUser);
+        const songReference = await songsCollection.add(uploadedSongFromUser);
+        const songSnapshot = await songReference.get();
+
+        props.handleNewSongAdded(songSnapshot);
 
         songsUploads.value[uploadedFile].variantSong = "bg-green-400";
         songsUploads.value[uploadedFile].iconSong = "fas fa-check";
