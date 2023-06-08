@@ -25,6 +25,10 @@ async function updateSongs(objectId: number, values: InputUpdateSongValues) {
   songs.value[objectId].modifiedName = values.modifiedName;
   songs.value[objectId].songGenre = values.songGenre;
 }
+
+function removeSong(objectId: number) {
+  songs.value.splice(objectId, 1);
+}
 </script>
 
 <template>
@@ -51,6 +55,7 @@ async function updateSongs(objectId: number, values: InputUpdateSongValues) {
               :song="song"
               :songIndex="index"
               :updateSongs="updateSongs"
+              :removeSong="removeSong"
             />
           </div>
         </div>

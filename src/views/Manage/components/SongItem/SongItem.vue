@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, type PropType } from "vue";
 import type { ISongsDocument, InputUpdateSongValues } from "../../types";
-import { songsCollection } from "@/includes/Firebase/firebase";
+import { songsCollection, firebaseStorage } from "@/includes/Firebase/firebase";
 
 const toggleEditForm = ref(false);
 const inSubmission = ref(false);
@@ -28,6 +28,10 @@ const props = defineProps({
     type: Function as PropType<
       (objectId: number, values: InputUpdateSongValues) => void
     >,
+    required: true,
+  },
+  removeSong: {
+    type: Function as PropType<(objectId: number) => void>,
     required: true,
   },
 });
@@ -62,6 +66,17 @@ function goBack() {
   toggleEditForm.value = false;
   alertConfiguration.value.toggleAlertMessage = false;
 }
+
+async function removeSelectedSong() {
+  const storageReference = firebaseStorage.ref();
+  const songReference = storageReference.child(
+    `songs/${props.song.originalName}`
+  );
+
+  await songReference.delete();
+  await songsCollection.doc(props.song.documentId).delete();
+  props.removeSong(props.songIndex);
+}
 </script>
 
 <template>
@@ -72,6 +87,7 @@ function goBack() {
       </h4>
       <button
         class="ml-1 py-1 px-2 text-sm rounded text-white bg-red-600 float-right"
+        @click.prevent="removeSelectedSong"
       >
         <i class="fa fa-times"></i>
       </button>
