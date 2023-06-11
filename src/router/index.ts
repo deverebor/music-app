@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/Home/HomeView.vue";
 import AboutView from "@/views/About/AboutView.vue";
 import ManageView from "@/views/Manage/ManageView.vue";
+import SongView from "@/views/Song/SongView.vue";
 
 import { useUserStore } from "@/stores/user/user";
 
@@ -26,6 +27,11 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+    },
+    {
+      path: "/song/:id",
+      name: "Song",
+      component: SongView,
     },
     {
       // @todo: create a 404 view

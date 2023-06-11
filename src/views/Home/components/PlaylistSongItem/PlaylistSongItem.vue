@@ -15,9 +15,12 @@ defineProps({
     class="flex justify-between items-center p-3 pl-6 cursor-pointer transition duration-300 hover:bg-gray-50"
   >
     <div>
-      <a href="#" class="font-bold block text-gray-600">
+      <router-link
+        :to="{ name: 'Song', params: { id: song.documentId } }"
+        class="font-bold block text-gray-600"
+      >
         {{ song.modifiedName }}
-      </a>
+      </router-link>
       <span class="text-gray-500 text-sm">{{ song.displayUserName }}</span>
     </div>
 
