@@ -80,6 +80,8 @@ const sortedComments = computed(() => {
 });
 
 async function handleSendComment(values: any, { resetForm }: any) {
+  if (typeof song.value.commentCount === "undefined") return;
+
   commentFormSettings.value.inSubmit = true;
   commentFormSettings.value.showAlert = true;
   commentFormSettings.value.alertVariant = "bg-blue-500";
@@ -95,6 +97,12 @@ async function handleSendComment(values: any, { resetForm }: any) {
   };
 
   await commentsCollection.add(comment);
+
+  song.value.commentCount += 1;
+  await songsCollection.doc(songIdInParams).update({
+    commentCount: song.value.commentCount,
+  });
+
   getComments();
 
   commentFormSettings.value.inSubmit = false;
@@ -153,7 +161,7 @@ async function getComments() {
     <div class="bg-white rounded border border-gray-200 relative flex flex-col">
       <div class="px-6 pt-6 pb-5 font-bold border-b border-gray-200">
         <!-- Comment Count -->
-        <span class="card-title">Comments (15)</span>
+        <span class="card-title">Comments ({{ song.commentCount }})</span>
         <i class="fa fa-comments float-right text-green-400 text-2xl"></i>
       </div>
       <div class="p-6">
