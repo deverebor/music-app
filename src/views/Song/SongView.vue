@@ -1,13 +1,31 @@
 <script setup lang="ts">
 import type { ISongsDocument } from "@/helpers/types";
-import { songsCollection } from "@/includes/Firebase/firebase";
+import {
+  commentsCollection,
+  songsCollection,
+  firebaseAuth,
+} from "@/includes/Firebase/firebase";
+import { useUserStore } from "@/stores/user/user";
+import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
 
 import { useRoute, useRouter } from "vue-router";
 
+const userStore = useUserStore();
+const { isUserLoggedIn } = storeToRefs(userStore);
+
 type ISongDocumentWithOutId = Omit<ISongsDocument, "documentId">;
 
 const song = ref<ISongDocumentWithOutId>({} as ISongDocumentWithOutId);
+const validationSchema = ref({
+  commentary: "required|min:3",
+});
+const commentFormSettings = ref({
+  alertMessage: "Please wait. Your comment is being sent.",
+  alertVariant: "bg-blue-500",
+  inSubmit: false,
+  showAlert: false,
+});
 
 const route = useRoute();
 const router = useRouter();
@@ -24,6 +42,34 @@ onMounted(async () => {
 
   song.value = documentSnapshot.data() as ISongDocumentWithOutId;
 });
+
+async function handleSendComment(values: any, { resetForm }: any) {
+  commentFormSettings.value.inSubmit = true;
+  commentFormSettings.value.showAlert = true;
+  commentFormSettings.value.alertVariant = "bg-blue-500";
+  commentFormSettings.value.alertMessage =
+    "Please wait. Your comment is being sent.";
+
+  const comment = {
+    content: values.commentary,
+    datePosted: new Date().toString(),
+    songId: songIdInParams,
+    userName: firebaseAuth.currentUser?.displayName,
+    uid: firebaseAuth.currentUser?.uid,
+  };
+
+  await commentsCollection.add(comment);
+
+  commentFormSettings.value.inSubmit = false;
+  commentFormSettings.value.alertVariant = "bg-green-500";
+  commentFormSettings.value.alertMessage = "Comment sent successfully.";
+
+  resetForm();
+
+  setTimeout(() => {
+    commentFormSettings.value.showAlert = false;
+  }, 3000);
+}
 </script>
 
 <template>
@@ -57,18 +103,33 @@ onMounted(async () => {
         <i class="fa fa-comments float-right text-green-400 text-2xl"></i>
       </div>
       <div class="p-6">
-        <form>
-          <textarea
+        <div
+          v-if="commentFormSettings.showAlert"
+          :class="commentFormSettings.alertVariant"
+          class="text-white text-center font-bold p-4 mb-4"
+        >
+          {{ commentFormSettings.alertMessage }}
+        </div>
+        <VeeForm
+          @submit="handleSendComment"
+          :validation-schema="validationSchema"
+          v-if="isUserLoggedIn"
+        >
+          <VeeField
+            as="textarea"
+            name="commentary"
             class="block w-full py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded mb-4"
             placeholder="Your comment here..."
-          ></textarea>
+          ></VeeField>
+          <VeeErrorMessage class="text-red-600" name="commentary" />
           <button
+            :disabled="commentFormSettings.inSubmit"
             type="submit"
             class="py-1.5 px-3 rounded text-white bg-green-600 block"
           >
             Submit
           </button>
-        </form>
+        </VeeForm>
         <!-- Sort Comments -->
         <select
           class="block mt-4 py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
