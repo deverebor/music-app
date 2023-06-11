@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ISongsDocument } from "@/helpers/types";
+import type { ISongDocumentWithOutId, ICommentDocument } from "@/helpers/types";
 import {
   commentsCollection,
   songsCollection,
@@ -14,8 +14,6 @@ import { useRoute, useRouter } from "vue-router";
 const userStore = useUserStore();
 const { isUserLoggedIn } = storeToRefs(userStore);
 
-type ISongDocumentWithOutId = Omit<ISongsDocument, "documentId">;
-
 const song = ref<ISongDocumentWithOutId>({} as ISongDocumentWithOutId);
 const validationSchema = ref({
   commentary: "required|min:3",
@@ -26,6 +24,7 @@ const commentFormSettings = ref({
   inSubmit: false,
   showAlert: false,
 });
+const comments = ref<ICommentDocument[]>([]);
 
 const route = useRoute();
 const router = useRouter();
@@ -41,6 +40,7 @@ onMounted(async () => {
   }
 
   song.value = documentSnapshot.data() as ISongDocumentWithOutId;
+  getComments();
 });
 
 async function handleSendComment(values: any, { resetForm }: any) {
@@ -68,7 +68,24 @@ async function handleSendComment(values: any, { resetForm }: any) {
 
   setTimeout(() => {
     commentFormSettings.value.showAlert = false;
-  }, 3000);
+  }, 4000);
+}
+
+async function getComments() {
+  const snapshot = await commentsCollection
+    .where("songId", "==", songIdInParams)
+    .get();
+
+  comments.value = [];
+
+  snapshot.forEach((doc) => {
+    comments.value.push({
+      documentId: doc.id,
+      ...doc.data(),
+    });
+  });
+
+  song.value.commentCount = snapshot.size;
 }
 </script>
 
@@ -142,77 +159,18 @@ async function handleSendComment(values: any, { resetForm }: any) {
   </section>
   <!-- Comments -->
   <ul class="container mx-auto">
-    <li class="p-6 bg-gray-50 border border-gray-200">
+    <li
+      class="p-6 bg-gray-50 border border-gray-200"
+      :key="comment.documentId"
+      v-for="comment in comments"
+    >
       <!-- Comment Author -->
       <div class="mb-5">
-        <div class="font-bold">Elaine Dreyfuss</div>
-        <time>5 mins ago</time>
+        <div class="font-bold">{{ comment.userName }}</div>
+        <time>{{ comment.datePosted }}</time>
       </div>
 
-      <p>
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-        accusantium der doloremque laudantium.
-      </p>
-    </li>
-    <li class="p-6 bg-gray-50 border border-gray-200">
-      <!-- Comment Author -->
-      <div class="mb-5">
-        <div class="font-bold">Elaine Dreyfuss</div>
-        <time>5 mins ago</time>
-      </div>
-
-      <p>
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-        accusantium der doloremque laudantium.
-      </p>
-    </li>
-    <li class="p-6 bg-gray-50 border border-gray-200">
-      <!-- Comment Author -->
-      <div class="mb-5">
-        <div class="font-bold">Elaine Dreyfuss</div>
-        <time>5 mins ago</time>
-      </div>
-
-      <p>
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-        accusantium der doloremque laudantium.
-      </p>
-    </li>
-    <li class="p-6 bg-gray-50 border border-gray-200">
-      <!-- Comment Author -->
-      <div class="mb-5">
-        <div class="font-bold">Elaine Dreyfuss</div>
-        <time>5 mins ago</time>
-      </div>
-
-      <p>
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-        accusantium der doloremque laudantium.
-      </p>
-    </li>
-    <li class="p-6 bg-gray-50 border border-gray-200">
-      <!-- Comment Author -->
-      <div class="mb-5">
-        <div class="font-bold">Elaine Dreyfuss</div>
-        <time>5 mins ago</time>
-      </div>
-
-      <p>
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-        accusantium der doloremque laudantium.
-      </p>
-    </li>
-    <li class="p-6 bg-gray-50 border border-gray-200">
-      <!-- Comment Author -->
-      <div class="mb-5">
-        <div class="font-bold">Elaine Dreyfuss</div>
-        <time>5 mins ago</time>
-      </div>
-
-      <p>
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-        accusantium der doloremque laudantium.
-      </p>
+      <p>{{ comment.content }}</p>
     </li>
   </ul>
 </template>
