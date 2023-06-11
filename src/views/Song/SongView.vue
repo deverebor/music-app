@@ -9,6 +9,7 @@ import {
   songsCollection,
   firebaseAuth,
 } from "@/includes/Firebase/firebase";
+import { usePlayerStore } from "@/stores/player/player";
 import { useUserStore } from "@/stores/user/user";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, computed, watch } from "vue";
@@ -17,6 +18,8 @@ import { useRoute, useRouter } from "vue-router";
 
 const userStore = useUserStore();
 const { isUserLoggedIn } = storeToRefs(userStore);
+
+const playerStore = usePlayerStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -144,6 +147,7 @@ async function getComments() {
     <div class="container mx-auto flex items-center">
       <!-- Play/Pause Button -->
       <button
+        @click.prevent="playerStore.handlePlayPause(song)"
         type="button"
         class="z-50 h-24 w-24 text-3xl bg-white text-black rounded-full focus:outline-none"
       >
