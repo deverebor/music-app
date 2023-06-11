@@ -1,13 +1,36 @@
 <script setup lang="ts">
 import { songsCollection } from "@/includes/Firebase/firebase";
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, onBeforeUnmount } from "vue";
 import type { ISongsDocument } from "@/helpers/types";
 import { PlaylistSongItem } from "./components";
 
 const songs = ref<ISongsDocument[]>([]);
+const hasPendingRequests = ref(false);
+const maxSongsPerLoad = 25;
 
-onBeforeMount(async () => {
-  const snapshot = await songsCollection.get();
+async function getSongs() {
+  if (hasPendingRequests.value) return;
+
+  let snapshot;
+  const hasSongs = Boolean(songs.value.length);
+  hasPendingRequests.value = true;
+
+  if (hasSongs) {
+    const lastDocumentSearch = await songsCollection
+      .doc(songs.value[songs.value.length - 1]?.documentId)
+      .get();
+
+    snapshot = await songsCollection
+      .orderBy("modifiedName")
+      .startAfter(lastDocumentSearch)
+      .limit(maxSongsPerLoad)
+      .get();
+  } else {
+    snapshot = await songsCollection
+      .orderBy("modifiedName")
+      .limit(maxSongsPerLoad)
+      .get();
+  }
 
   snapshot.forEach((document) => {
     songs.value.push({
@@ -15,6 +38,28 @@ onBeforeMount(async () => {
       ...document.data(),
     });
   });
+
+  hasPendingRequests.value = false;
+}
+
+function handleUserScroll() {
+  const { scrollTop, offsetHeight } = document.documentElement;
+  const { innerHeight } = window;
+  const bottomOfWindow = Math.round(scrollTop) + innerHeight === offsetHeight;
+
+  if (bottomOfWindow) {
+    getSongs();
+  }
+}
+
+onBeforeMount(async () => {
+  getSongs();
+
+  window.addEventListener("scroll", handleUserScroll);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleUserScroll);
 });
 </script>
 
