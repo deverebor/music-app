@@ -11,12 +11,15 @@ import {
 } from "@/includes/Firebase/firebase";
 import { useUserStore } from "@/stores/user/user";
 import { storeToRefs } from "pinia";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 
 import { useRoute, useRouter } from "vue-router";
 
 const userStore = useUserStore();
 const { isUserLoggedIn } = storeToRefs(userStore);
+
+const route = useRoute();
+const router = useRouter();
 
 const song = ref<ISongDocumentWithOutId>({} as ISongDocumentWithOutId);
 const validationSchema = ref({
@@ -31,9 +34,6 @@ const commentFormSettings = ref({
 const comments = ref<ICommentDocument[]>([]);
 const sortSelection = ref("1");
 
-const route = useRoute();
-const router = useRouter();
-
 const songIdInParams = route.params.id as string;
 
 onMounted(async () => {
@@ -44,8 +44,22 @@ onMounted(async () => {
     return;
   }
 
+  const { sort } = route.query;
+
+  sortSelection.value = sort === "1" || sort === "2" ? sort : "1";
+
   song.value = documentSnapshot.data() as ISongDocumentWithOutId;
   getComments();
+});
+
+watch(sortSelection, (newValue) => {
+  if (newValue === route.query.sort) return;
+
+  router.push({
+    query: {
+      sort: newValue,
+    },
+  });
 });
 
 const sortedComments = computed(() => {
