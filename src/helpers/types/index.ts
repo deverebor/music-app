@@ -24,3 +24,5 @@ export type ICommentDocument = {
   uid?: string;
   userName?: string;
 };
+
+export type ICommentDocumentRequired = Required<ICommentDocument>;

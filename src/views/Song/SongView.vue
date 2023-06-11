@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { ISongDocumentWithOutId, ICommentDocument } from "@/helpers/types";
+import type {
+  ISongDocumentWithOutId,
+  ICommentDocument,
+  ICommentDocumentRequired,
+} from "@/helpers/types";
 import {
   commentsCollection,
   songsCollection,
@@ -7,7 +11,7 @@ import {
 } from "@/includes/Firebase/firebase";
 import { useUserStore } from "@/stores/user/user";
 import { storeToRefs } from "pinia";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 
 import { useRoute, useRouter } from "vue-router";
 
@@ -25,6 +29,7 @@ const commentFormSettings = ref({
   showAlert: false,
 });
 const comments = ref<ICommentDocument[]>([]);
+const sortSelection = ref("1");
 
 const route = useRoute();
 const router = useRouter();
@@ -43,6 +48,23 @@ onMounted(async () => {
   getComments();
 });
 
+const sortedComments = computed(() => {
+  const requiredComment = comments.value as ICommentDocumentRequired[];
+  return requiredComment
+    .slice()
+    .sort((a: ICommentDocumentRequired, b: ICommentDocumentRequired) => {
+      if (sortSelection.value === "1") {
+        return (
+          new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime()
+        );
+      }
+
+      return (
+        new Date(a.datePosted).getTime() - new Date(b.datePosted).getTime()
+      );
+    });
+});
+
 async function handleSendComment(values: any, { resetForm }: any) {
   commentFormSettings.value.inSubmit = true;
   commentFormSettings.value.showAlert = true;
@@ -59,6 +81,7 @@ async function handleSendComment(values: any, { resetForm }: any) {
   };
 
   await commentsCollection.add(comment);
+  getComments();
 
   commentFormSettings.value.inSubmit = false;
   commentFormSettings.value.alertVariant = "bg-green-500";
@@ -149,6 +172,7 @@ async function getComments() {
         </VeeForm>
         <!-- Sort Comments -->
         <select
+          v-model="sortSelection"
           class="block mt-4 py-1.5 px-3 text-gray-800 border border-gray-300 transition duration-500 focus:outline-none focus:border-black rounded"
         >
           <option value="1">Latest</option>
@@ -162,7 +186,7 @@ async function getComments() {
     <li
       class="p-6 bg-gray-50 border border-gray-200"
       :key="comment.documentId"
-      v-for="comment in comments"
+      v-for="comment in sortedComments"
     >
       <!-- Comment Author -->
       <div class="mb-5">
