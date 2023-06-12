@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import type { ISongDocumentWithOutId } from "@/helpers/types";
 import { ref, computed } from "vue";
 import { Howl } from "howler";
-import { formatTime } from "@/helpers/functions";
+import { formatPlayerProgress, formatTime } from "@/helpers/functions";
 
 export const usePlayerStore = defineStore("player", () => {
   const currentPlayedSong = ref<ISongDocumentWithOutId>({});
@@ -14,6 +14,7 @@ export const usePlayerStore = defineStore("player", () => {
   );
   const soundSeek = ref<string>("00:00");
   const soundDuration = ref<string>("00:00");
+  const playerProgress = ref<string>("0%");
 
   const currentPlayingSong = computed((): boolean => {
     if (currentSound.value.playing()) {
@@ -24,6 +25,8 @@ export const usePlayerStore = defineStore("player", () => {
   });
 
   async function handlePlayPause(song: ISongDocumentWithOutId) {
+    if (currentSound.value instanceof Howl) currentSound.value.unload();
+
     currentPlayedSong.value = song;
 
     currentSound.value = new Howl({
@@ -33,7 +36,7 @@ export const usePlayerStore = defineStore("player", () => {
 
     currentSound.value.play();
     currentSound.value.on("play", () => {
-      requestAnimationFrame(progressBar);
+      requestAnimationFrame(handleMusicDuration);
     });
   }
   async function togglePlayPause() {
@@ -45,22 +48,29 @@ export const usePlayerStore = defineStore("player", () => {
       currentSound.value.play();
     }
   }
-  async function progressBar() {
+  async function handleMusicDuration() {
     soundSeek.value = formatTime(currentSound.value.seek());
     soundDuration.value = formatTime(currentSound.value.duration());
 
+    playerProgress.value = formatPlayerProgress(
+      currentSound.value.seek(),
+      currentSound.value.duration()
+    );
+
     if (currentSound.value.playing()) {
-      requestAnimationFrame(progressBar);
+      requestAnimationFrame(handleMusicDuration);
     }
   }
 
   return {
     currentPlayedSong,
-    currentSound,
-    soundSeek,
-    soundDuration,
     currentPlayingSong,
-    togglePlayPause,
+    currentSound,
+    handleMusicDuration,
     handlePlayPause,
+    playerProgress,
+    soundDuration,
+    soundSeek,
+    togglePlayPause,
   };
 });

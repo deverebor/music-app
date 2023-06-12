@@ -1,1 +1,1 @@
-export { formatTime } from "./formatters/formatters";
+export { formatTime, formatPlayerProgress } from "./formatters/formatters";

@@ -7,3 +7,7 @@ export function formatTime(time: number): string {
 
   return `${formattedMinutes}:${formattedSeconds}`;
 }
+
+export function formatPlayerProgress(seek: number, duration: number): string {
+  return `${(seek / duration) * 100}%`;
+}
