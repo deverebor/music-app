@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { usePlayerStore } from "@/stores/player/player";
+import { storeToRefs } from "pinia";
 
 const playerStore = usePlayerStore();
+const { soundDuration, soundSeek } = storeToRefs(playerStore);
 </script>
 <template>
   <div class="fixed bottom-0 left-0 bg-white px-4 py-2 w-full">
@@ -22,7 +24,7 @@ const playerStore = usePlayerStore();
         ></i>
       </button>
       <!-- Current Position -->
-      <div class="player-currenttime">00:00</div>
+      <div class="player-currenttime">{{ soundSeek }}</div>
       <!-- Scrub Container  -->
       <div class="w-full h-2 rounded bg-gray-200 relative cursor-pointer">
         <!-- Player Ball -->
@@ -39,7 +41,7 @@ const playerStore = usePlayerStore();
         ></span>
       </div>
       <!-- Duration -->
-      <div class="player-duration">03:06</div>
+      <div class="player-duration">{{ soundDuration }}</div>
     </div>
   </div>
 </template>

@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import type { ISongDocumentWithOutId } from "@/helpers/types";
 import { ref, computed } from "vue";
 import { Howl } from "howler";
+import { formatTime } from "@/helpers/functions";
 
 export const usePlayerStore = defineStore("player", () => {
   const currentPlayedSong = ref<ISongDocumentWithOutId>({});
@@ -11,6 +12,8 @@ export const usePlayerStore = defineStore("player", () => {
       html5: true,
     })
   );
+  const soundSeek = ref<string>("00:00");
+  const soundDuration = ref<string>("00:00");
 
   const currentPlayingSong = computed((): boolean => {
     if (currentSound.value.playing()) {
@@ -29,6 +32,9 @@ export const usePlayerStore = defineStore("player", () => {
     });
 
     currentSound.value.play();
+    currentSound.value.on("play", () => {
+      requestAnimationFrame(progressBar);
+    });
   }
   async function togglePlayPause() {
     if (!currentSound.value.playing()) return;
@@ -39,10 +45,20 @@ export const usePlayerStore = defineStore("player", () => {
       currentSound.value.play();
     }
   }
+  async function progressBar() {
+    soundSeek.value = formatTime(currentSound.value.seek());
+    soundDuration.value = formatTime(currentSound.value.duration());
+
+    if (currentSound.value.playing()) {
+      requestAnimationFrame(progressBar);
+    }
+  }
 
   return {
     currentPlayedSong,
     currentSound,
+    soundSeek,
+    soundDuration,
     currentPlayingSong,
     togglePlayPause,
     handlePlayPause,
