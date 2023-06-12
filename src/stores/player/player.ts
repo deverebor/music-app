@@ -38,6 +38,9 @@ export const usePlayerStore = defineStore("player", () => {
     currentSound.value.on("play", () => {
       requestAnimationFrame(handleMusicDuration);
     });
+    currentSound.value.on("seek", () => {
+      requestAnimationFrame(handleMusicDuration);
+    });
   }
   async function togglePlayPause() {
     if (!currentSound.value.playing()) return;
@@ -61,12 +64,23 @@ export const usePlayerStore = defineStore("player", () => {
       requestAnimationFrame(handleMusicDuration);
     }
   }
+  function updateSeekScrubPosition(event: any) {
+    if (!currentSound.value.playing()) return;
+
+    const { x, width } = event.currentTarget.getBoundingClientRect();
+    const clientClickX = event.clientX - x;
+    const percentage = clientClickX / width;
+    const seconds = currentSound.value.duration() * percentage;
+
+    currentSound.value.seek(seconds);
+  }
 
   return {
     currentPlayedSong,
     currentPlayingSong,
     currentSound,
     handleMusicDuration,
+    updateSeekScrubPosition,
     handlePlayPause,
     playerProgress,
     soundDuration,
