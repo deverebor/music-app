@@ -13,3 +13,16 @@ export type InputUpdateSongValues = {
   modifiedName: string;
   songGenre: string;
 };
+
+export type ISongDocumentWithOutId = Omit<ISongsDocument, "documentId">;
+
+export type ICommentDocument = {
+  content?: string;
+  datePosted?: string;
+  documentId: string;
+  songId?: string;
+  uid?: string;
+  userName?: string;
+};
+
+export type ICommentDocumentRequired = Required<ICommentDocument>;
