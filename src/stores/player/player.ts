@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import type { ISongDocumentWithOutId } from "@/helpers/types";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Howl } from "howler";
 
 export const usePlayerStore = defineStore("player", () => {
@@ -12,6 +12,14 @@ export const usePlayerStore = defineStore("player", () => {
     })
   );
 
+  const currentPlayingSong = computed((): boolean => {
+    if (currentSound.value.playing()) {
+      return Boolean(currentPlayedSong.value);
+    }
+
+    return false;
+  });
+
   async function handlePlayPause(song: ISongDocumentWithOutId) {
     currentPlayedSong.value = song;
 
@@ -22,10 +30,21 @@ export const usePlayerStore = defineStore("player", () => {
 
     currentSound.value.play();
   }
+  async function togglePlayPause() {
+    if (!currentSound.value.playing()) return;
+
+    if (currentSound.value.playing()) {
+      currentSound.value.pause();
+    } else {
+      currentSound.value.play();
+    }
+  }
 
   return {
     currentPlayedSong,
     currentSound,
+    currentPlayingSong,
+    togglePlayPause,
     handlePlayPause,
   };
 });

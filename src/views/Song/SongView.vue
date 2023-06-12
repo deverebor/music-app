@@ -151,7 +151,13 @@ async function getComments() {
         type="button"
         class="z-50 h-24 w-24 text-3xl bg-white text-black rounded-full focus:outline-none"
       >
-        <i class="fas fa-play"></i>
+        <i
+          :class="{
+            'fa-pause': playerStore.currentPlayingSong,
+            'fa-play': !playerStore.currentPlayingSong,
+          }"
+          class="fas"
+        ></i>
       </button>
       <div class="z-50 text-left ml-8">
         <!-- Song Info -->
